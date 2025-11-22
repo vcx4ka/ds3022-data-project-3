@@ -20,6 +20,15 @@ I tested four hypotheses, stated in the project repo's ReadMe file, regarding ho
 
 Include at least one compelling plot or visualization of your work. Add images in your subdirectory and then display them using markdown in your README.md file.
 
+<img width="2951" height="1757" alt="image" src="https://github.com/user-attachments/assets/3a3c9734-f7d0-4d9a-a02d-b97b67821e59" />
+<img width="2951" height="1757" alt="image" src="https://github.com/user-attachments/assets/6d4423e8-5704-4481-a525-ce262789c8b4" />
+<img width="2951" height="1758" alt="image" src="https://github.com/user-attachments/assets/1fef1d07-d0ff-456a-b544-1e305f35f963" />
+<img width="3551" height="1755" alt="image" src="https://github.com/user-attachments/assets/821eeb8f-a521-4554-bc19-72daf642533a" />
+
+
+
+
+
 ## GitHub Repository
 
 https://github.com/stefanregalia/ds3022-data-project-3
