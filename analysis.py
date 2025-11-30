@@ -34,7 +34,7 @@ def analyze_commits():
         plt.title('Number of Commits per Package')
         plt.xticks(rotation=45)
         plt.tight_layout()
-        plt.savefig('commit_counts_per_package.png')
+        plt.savefig('./visualizations/commit_counts_per_package.png')
         logger.info("Saved commit counts bar chart as commit_counts_per_package.png.")
         print( commit_counts_df)
     except Exception as e:
@@ -109,7 +109,7 @@ def visualize_hourly_commits():
         plt.ylabel("commits")
         plt.xlabel("hours in the day")
 
-        plt.savefig("hourly_commits.png")
+        plt.savefig("./visualizations/hourly_commits.png")
 
         logger.info("finished plotting commits per hour in the day (24)")
 
@@ -174,7 +174,7 @@ def visualize_daily_commits():
         plt.ylabel("commits")
         plt.xlabel("days in the year")
 
-        plt.savefig("daily_commits.png")
+        plt.savefig("./visualizations/daily_commits.png")
 
         logger.info("finished plotting commits per day of year (365)")
 
@@ -239,7 +239,7 @@ def visualize_weekly_commits():
         plt.ylabel("commits")
         plt.xlabel("weeks in the year")
 
-        plt.savefig("weekly_commits.png")
+        plt.savefig("./visualizations/weekly_commits.png")
 
         logger.info("finished plotting commits per week")
 
@@ -304,7 +304,7 @@ def visualize_monthly_commits():
         plt.ylabel("commits")
         plt.xlabel("months in the year")
 
-        plt.savefig("monthly_commits.png")
+        plt.savefig("./visualizations/monthly_commits.png")
 
         logger.info("finished plotting commits per month")
 
@@ -330,7 +330,12 @@ def get_last1000_commit_users(package):
                                          ORDER BY commits DESC;
                                          """, [package],).df()
 
-        filename = f"{package}_last1000commitusers.txt"
+        
+        directory = "./last_1000_commit_users/"
+        os.makedirs(directory, exist_ok=True)
+
+        filename = f"{directory}{package}_last1000commitusers.txt"
+        
         with open(filename, "w") as file:
             file.write(
                 f"Meaningful commit users (non-bot authors) in the last 1000 commits " f"for package '{package}':\n\n")
@@ -343,25 +348,68 @@ def get_last1000_commit_users(package):
         logger.info(msg)
 
     except Exception as e:
-        logger.info(f"An error occurred during last 1000 commit user obtaining: {e}")
+        logger.error(f"An error occurred during last 1000 commit user obtaining: {e}")
+
+
+def compare_trends(package):
+    con=duckdb.connect(database="packages.duckdb", read_only=True)
+    logger.info(f"Connect to duckdb for comparing commit trends in past 3, 6 and earlier months")
+
+    try:
+        threemo_trend = con.execute(f"""SELECT COUNT(*) 
+                                       FROM commits
+                                       WHERE package = ?
+                                       AND date >= CURRENT_DATE - INTERVAL 3 MONTH;""", [package],).fetchone()[0]
+        
+        sixmo_trend = con.execute(f"""SELECT COUNT(*) 
+                                     FROM commits
+                                     WHERE package = ?
+                                     AND date >= CURRENT_DATE - INTERVAL 6 MONTH;""", [package],).fetchone()[0]
+
+        pre_threemo_trend = con.execute(f"""SELECT COUNT(*)
+                                           FROM commits
+                                           WHERE package = ?
+                                           AND date < CURRENT_DATE - INTERVAL 3 MONTH
+                                           AND date >= CURRENT_DATE - INTERVAL 6 MONTH; """, [package],).fetchone()[0]
+
+        pre_sixmo_trend = con.execute(f"""SELECT COUNT(*)
+                                         FROM commits
+                                         WHERE package = ?
+                                         AND date < CURRENT_DATE - INTERVAL 6 MONTH
+                                         AND date >= CURRENT_DATE - INTERVAL 12 MONTH;""", [package],).fetchone()[0]
+        
+        print(f"{package}")
+        print(f"PRE three month period: {pre_threemo_trend},\nlast three months: {threemo_trend}")
+        print(f"    - percent change for three months: {(((threemo_trend - pre_threemo_trend)/pre_threemo_trend) * 100):.2f}%")
+        print(f"PRE six month period: {pre_sixmo_trend},\nlast six months: {sixmo_trend}")
+        print(f"    - percent change for three months: {(((sixmo_trend - pre_sixmo_trend)/pre_sixmo_trend) * 100):.2f}%")
+
+        
+    except Exception as e:
+        logger.error(f"An error occurred trying to compare trends: {e}")
 
 
 
 if __name__ == "__main__":
     packages = ["scikit-learn", "pandas", "matplotlib", "plotly", "numpy"]
 
-    analyze_commits()
-    print("\n")
+    # analyze_commits()
+    # print("\n")
     
-    visualize_hourly_commits()
-    print("hourly visualization in hourly_commits.png")
-    visualize_daily_commits()
-    print("daily visualization in daily_commits.png")
-    visualize_weekly_commits()
-    print("weekly visualization in weekly_commits.png")
-    visualize_monthly_commits()
-    print("monthly visualization in monthly_commits.png\n")
+    # visualize_hourly_commits()
+    # print("hourly visualization in hourly_commits.png")
+    # visualize_daily_commits()
+    # print("daily visualization in daily_commits.png")
+    # visualize_weekly_commits()
+    # print("weekly visualization in weekly_commits.png")
+    # visualize_monthly_commits()
+    # print("monthly visualization in monthly_commits.png\n")
 
     for package in packages:
         get_last1000_commit_users(package)
     print("\n")
+
+    # for package in packages:
+    #     compare_trends(package)
+        # print("\n")
+    # print("\n")
